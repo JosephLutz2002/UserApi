@@ -9,14 +9,15 @@ app = Flask(__name__)
 
 # Change these to your own secret keys
 app.config['JWT_SECRET_KEY'] = os.environ.get('ACCESS')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=30)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
 jwt = JWTManager(app)
 
 # Sample user data (replace with your user management system)
 users = {
-   "Joseph":123 
+   "Joseph":123,
+   "user1":"password1"
 }
 refresh_tokens = {}
 
