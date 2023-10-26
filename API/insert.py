@@ -151,6 +151,41 @@ def add_test(name,date,test_id,module_id,user_id,weighting):
             cursor.close()
             connection.close()
             
+def getAllModuleForUser(id):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        select_query = """
+        SELECT moduleid, name,year,code FROM modules WHERE userid = %s
+        """
+        cursor.execute(select_query, (id,))  # Pass the parameter as a single argument in a tuple
+        rows = cursor.fetchall()
+        print(rows)
+        return rows
+    except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+            
+def deleteUserModule(id, userid):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        delete_query = """
+        DELETE FROM modules WHERE moduleid = %s AND userid = %s
+        """
+        cursor.execute(delete_query, (id, userid))  # Pass the parameters in a tuple
+        connection.commit()  # Don't forget to commit the transaction
+    except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+
+
 def update_Assignment(assign_id,module_id,user_id,mark,name):
     try:
         connection = psycopg2.connect(**db_params)
