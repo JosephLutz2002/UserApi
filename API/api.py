@@ -5,7 +5,7 @@ from datetime import timedelta
 import os
 import uuid
 from flask_cors import CORS
-from insert import insert_user,get_user,validate_unique_user,add_module,add_Assingment,add_test,update_Assignment,update_Test,getAllModuleForUser,deleteUserModule
+from insert import insert_user,get_user,validate_unique_user,add_module,add_Assingment,add_test,update_Assignment,update_Test,getAllModuleForUser,deleteUserModule,getAllAssignments,getAllTests,getMark
 app = Flask(__name__)
 CORS(app)
 # Change these to your own secret keys
@@ -76,7 +76,7 @@ def addModule():
     add_module(module_id,module_name,module_year,module_code,user_id)
     return {"id":module_id}
 
-@app.route('/addAssignment',methods=['POST'])
+@app.route('/api/modules/addAssignment',methods=['POST'])
 def addAssignment():
     name = request.json.get('name',None)
     desc = request.json.get('desc',None)
@@ -92,9 +92,9 @@ def addAssignment():
     print(module_id)
     print(weighting)
     add_Assingment(name,desc,date,userid,Assignment_id,module_id,weighting)
-    return {"Message":"Success"}
+    return {"id":Assignment_id}
 
-@app.route('/addTest',methods=['POST'])
+@app.route('/api/modules/addTest',methods=['POST'])
 def addTest():
     name = request.json.get('name',None)
     date = request.json.get('date',None)
@@ -103,7 +103,7 @@ def addTest():
     weighting = request.json.get('weighting',None)
     test_id = str(uuid.uuid4())
     add_test(name,date,test_id,module_id,user_id,weighting)
-    return{"Message":"Success"}
+    return{"id":test_id}
 
 @app.route('/updateAssignment',methods=['POST'])
 def updateAssignment():
@@ -154,5 +154,31 @@ def deleteModule():
     deleteUserModule(moduleId,userid)
     return {'delete':"success"}
 
+
+@app.route('/api/modules/getAssignments',methods=['GET'])
+def getAssignments():
+    module_id = request.args.get('module_id')
+    user_id = request.args.get('user_id')
+    assignments = getAllAssignments(module_id,user_id)
+    print(assignments)
+    return {'assignments':assignments}
+
+@app.route('/api/modules/getTests',methods=['GET'])
+def getTests():
+    module_id = request.args.get('module_id')
+    user_id = request.args.get('user_id')
+    tests = getAllTests(module_id,user_id)
+    print(tests)
+    return {'tests':tests}    
+
+
+@app.route('/api/modules/average',methods=['GET'])
+def getUserMark():
+    userid=request.args.get('user_id')
+    module_id = request.args.get('module_id')
+    mark = getMark(userid,module_id)
+    print(mark)
+    return {'average':mark}
+    
 if __name__ == '__main__':
     app.run(debug=True)

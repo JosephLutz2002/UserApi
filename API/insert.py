@@ -156,7 +156,7 @@ def getAllModuleForUser(id):
         connection = psycopg2.connect(**db_params)
         cursor = connection.cursor()
         select_query = """
-        SELECT moduleid, name,year,code FROM modules WHERE userid = %s
+        SELECT moduleid, name,year,code,mark FROM modules WHERE userid = %s
         """
         cursor.execute(select_query, (id,))  # Pass the parameter as a single argument in a tuple
         rows = cursor.fetchall()
@@ -181,6 +181,41 @@ def deleteUserModule(id, userid):
     except (Exception, psycopg2.Error) as error:
         print(f"Error: {error}")
     finally:
+        if connection:
+            cursor.close()
+            connection.close()
+            
+def getAllAssignments(module_id,user_id):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        select_query = """
+        SELECT assignid, name, duedate, mark, weighting, description FROM assignments where userid = %s and moduleid=%s
+        """
+        cursor.execute(select_query, (user_id,module_id))  # Pass the parameter as a single argument in a tuple
+        rows = cursor.fetchall()
+        return rows
+    except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+            
+            
+def getAllTests(module_id,user_id):
+     try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        select_query = """
+        SELECT testid, name, date, mark, weighting FROM tests where userid = %s and moduleid=%s
+        """
+        cursor.execute(select_query, (user_id,module_id))  # Pass the parameter as a single argument in a tuple
+        rows = cursor.fetchall()
+        return rows
+     except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
+     finally:
         if connection:
             cursor.close()
             connection.close()
@@ -230,4 +265,22 @@ def update_Test(mark,name,test_id,user_id,module_id):
         updated_data = cursor.fetchone()
         print("Updated Data:", updated_data)
     except (Exception, psycopg2.Error) as error:
-        print(f"Error: {error}")        
+        print(f"Error: {error}")
+        
+        
+def getMark(userid, moduleid):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        update_query = """
+        SELECT (mark * weighting)/100 AS mark FROM assignments
+        WHERE userid=%s AND moduleid=%s
+        """
+        cursor.execute(update_query, (
+            userid,moduleid
+        ))
+        updated_data = cursor.fetchall()
+        return sum([average[0] for average in updated_data])
+        print("Updated Data:", updated_data)
+    except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
