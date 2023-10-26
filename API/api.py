@@ -5,7 +5,7 @@ from datetime import timedelta
 import os
 import uuid
 from flask_cors import CORS
-from insert import insert_user,get_user,validate_unique_user,add_module,add_Assingment,add_test,update_Assignment,update_Test,getAllModuleForUser,deleteUserModule,getAllAssignments,getAllTests,getMark
+from insert import insert_user,get_user,validate_unique_user,add_module,add_Assingment,add_test,update_Assignment,update_Test,getAllModuleForUser,deleteUserModule,getAllAssignments,getAllTests,getMark,deleteAssig,deleteT
 app = Flask(__name__)
 CORS(app)
 # Change these to your own secret keys
@@ -105,22 +105,18 @@ def addTest():
     add_test(name,date,test_id,module_id,user_id,weighting)
     return{"id":test_id}
 
-@app.route('/updateAssignment',methods=['POST'])
+@app.route('/api/modules/updateAssignment',methods=['POST'])
 def updateAssignment():
     name = request.json.get('name',None)
     assign_id = request.json.get('assignid',None)
     module_id = request.json.get('moduleid',None)
     user_id = request.json.get('userid',None)
     mark = request.json.get("mark",None)
-    print(name)
-    print(assign_id)
-    print(module_id)
-    print(user_id)
-    print(mark)
     update_Assignment(assign_id,module_id,user_id,mark,name)
-    return{"Message":"Success"}
+    mark = getMark(user_id,module_id)
+    return {"mark":mark}
 
-@app.route('/updateTest',methods=['POST'])
+@app.route('/api/modules/updateTest',methods=['POST'])
 def updateTest():
     name = request.json.get('name',None)
     test_id = request.json.get('testid',None)
@@ -128,7 +124,8 @@ def updateTest():
     user_id = request.json.get('user',None)
     mark = request.json.get('mark',None)
     update_Test(mark,name,test_id,user_id,module_id)
-    return {"Message":"Success"}
+    mark = getMark(user_id,module_id)
+    return {"mark":mark}
 
 @app.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
@@ -180,5 +177,23 @@ def getUserMark():
     print(mark)
     return {'average':mark}
     
+    
+@app.route('/api/modules/deleteAssignment',methods=['POST'])
+def deleteAssignment():
+    assign_id = request.json.get('assignid')
+    module_id = request.json.get('moduleid')
+    user_id = request.json.get('userid')
+    deleteAssig(user_id,assign_id,module_id)
+    mark = getMark(user_id,module_id)
+    return {"mark":mark}
+
+@app.route('/api/modules/deleteTest',methods=['POST'])
+def deleteTest():
+    test_id = request.json.get('testid')
+    module_id = request.json.get('moduleid')
+    user_id = request.json.get('userid')
+    deleteT(user_id,module_id,test_id)
+    mark = getMark(user_id,module_id)
+    return {"mark":mark}    
 if __name__ == '__main__':
     app.run(debug=True)

@@ -178,6 +178,14 @@ def deleteUserModule(id, userid):
         """
         cursor.execute(delete_query, (id, userid))  # Pass the parameters in a tuple
         connection.commit()  # Don't forget to commit the transaction
+        delete_query = """
+        DELETE FROM tests WHERE moduleid = %s AND userid = %s
+        """
+        cursor.execute(delete_query, (id,userid))
+        delete_query = """
+        DELETE FROM assignments WHERE moduleid = %s AND userid = %s
+        """
+        cursor.execute(delete_query, (id,userid))
     except (Exception, psycopg2.Error) as error:
         print(f"Error: {error}")
     finally:
@@ -261,12 +269,41 @@ def update_Test(mark,name,test_id,user_id,module_id):
             module_id
         ))
         connection.commit()
-        cursor.execute("SELECT * FROM assignments WHERE assignid = %s", (assign_id,))
-        updated_data = cursor.fetchone()
-        print("Updated Data:", updated_data)
+    except (Exception, psycopg2.Error) as error:
+        pass
+ 
+def deleteAssig(userid,assignmentid,moduleid):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        delete_query = """
+        DELETE FROM assignments WHERE moduleid = %s AND userid = %s and assignid=%s
+        """
+        cursor.execute(delete_query, (moduleid,userid,assignmentid))  # Pass the parameters in a tuple
+        connection.commit()  # Don't forget to commit the transaction
     except (Exception, psycopg2.Error) as error:
         print(f"Error: {error}")
-        
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()  
+            
+def deleteT(userid,moduleid,testid):
+     try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        delete_query = """
+        DELETE FROM tests WHERE moduleid = %s AND userid = %s and testid=%s
+        """
+        cursor.execute(delete_query, (moduleid,userid,testid))
+        connection.commit() 
+     except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
+     finally:
+        if connection:
+            cursor.close()
+            connection.close()  
+          
         
 def getMark(userid, moduleid):
     try:
@@ -279,8 +316,30 @@ def getMark(userid, moduleid):
         cursor.execute(update_query, (
             userid,moduleid
         ))
-        updated_data = cursor.fetchall()
-        return sum([average[0] for average in updated_data])
+        assign_data = cursor.fetchall()
+        
+        update_query = """
+        SELECT (mark*weighting)/100 as mark FROM tests
+        WHERE userid=%s AND moduleid=%s
+        """
+        cursor.execute(update_query, (
+            userid,moduleid
+        ))
+        test_data = cursor.fetchall()
+        print(test_data)
+        mark = sum([average[0] for average in assign_data]) + sum([average[0] for average in test_data])
+        update_query = """
+        UPDATE modules
+        SET mark = %s
+        WHERE userid = %s AND moduleid = %s
+        """
+        cursor.execute(update_query, (
+            mark,
+            userid,
+            moduleid
+        ))
+        connection.commit()
+        return mark
         print("Updated Data:", updated_data)
     except (Exception, psycopg2.Error) as error:
         print(f"Error: {error}")
