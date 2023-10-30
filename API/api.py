@@ -6,7 +6,7 @@ from datetime import timedelta
 import os
 import uuid
 from flask_cors import CORS
-from insert import insert_user,get_user,validate_unique_user,add_module,add_Assingment,add_test,update_Assignment,update_Test,getAllModuleForUser,deleteUserModule,getAllAssignments,getAllTests,getMark,deleteAssig,deleteT
+from insert import insert_user,get_user,validate_unique_user,add_module,add_Assingment,add_test,update_Assignment,update_Test,getAllModuleForUser,deleteUserModule,getAllAssignments,getAllTests,getMark,deleteAssig,deleteT,getWeightingAndName
 app = Flask(__name__)
 CORS(app)
 # Change these to your own secret keys
@@ -244,6 +244,15 @@ def download_file():
             return "File not found", 404
     else:
         return "Missing 'filename' query parameter", 400
+    
+    
+@app.route('/getM',methods=['GET'])
+@jwt_required()
+def getModule():
+    moduleid = request.args.get('moduleid')
+    userid = get_jwt_identity()
+    results = getWeightingAndName(moduleid,userid)
+    return {'results':results}
   
 if __name__ == '__main__':
     app.run(debug=True)

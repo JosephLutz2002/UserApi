@@ -303,6 +303,29 @@ def deleteT(userid,moduleid,testid):
         if connection:
             cursor.close()
             connection.close()  
+            
+            
+def getWeightingAndName(moduleid,userid):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        query = """
+        SELECT name, weighting FROM assignments
+        WHERE moduleid = %s AND userid = %s
+        UNION ALL
+        SELECT name, weighting FROM tests
+        WHERE moduleid = %s AND userid = %s;
+        """
+        cursor.execute(query, (moduleid, userid, moduleid, userid))
+        results = cursor.fetchall()
+        return results
+
+    except (Exception, psycopg2.Error) as error:
+        print(f"Error: {error}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()  
           
         
 def getMark(userid, moduleid):
